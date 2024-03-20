@@ -74,6 +74,7 @@ h6 {
 /*--------------------------------------------------------------
 # Back to top button
 --------------------------------------------------------------*/
+
 .back-to-top {
   position: fixed;
   visibility: hidden;
@@ -82,11 +83,19 @@ h6 {
   bottom: 15px;
   z-index: 996;
   background: #47b2e4;
-  width: 40px;
-  height: 40px;
+  width: 50px; /* Adjusted width */
+  height: 50px; /* Adjusted height */
   border-radius: 50px;
   transition: all 0.4s;
 }
+
+.back-to-top i {
+  font-size: 24px;
+  color: #fff;
+  line-height: 0;
+  padding: 10px; /* Adjusted padding */
+}
+
 
 .back-to-top i {
   font-size: 24px;
@@ -110,7 +119,7 @@ h6 {
 #header {
   transition: all 0.5s;
   z-index: 997;
-  padding: 15px 0;
+  padding: 30px 0; /* Adjusted padding */
 }
 
 #header.header-scrolled,
@@ -395,7 +404,7 @@ h6 {
 }
 
 #hero h1 {
-  margin: 0 0 10px 0;
+  margin: 0 0 15px 0;
   font-size: 48px;
   font-weight: 700;
   line-height: 56px;
@@ -841,46 +850,62 @@ section {
 /*--------------------------------------------------------------
 # Services
 --------------------------------------------------------------*/
-.services .icon-box {
-  box-shadow: 0px 0 25px 0 rgba(0, 0, 0, 0.1);
-  padding: 50px 30px;
-  transition: all ease-in-out 0.4s;
-  background: #fff;
+.carousel-item {
+  text-align: center;
+  overflow: hidden;
+}
+.carousel-item img {
+  max-width: 100%;
+  height: auto;
+  margin: auto;
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Shadow effect */
+}
+/* Smooth transition effect for carousel items */
+.carousel-item {
+  transition: transform 0.6s ease-in-out;
+}
+/* Custom styles for carousel controls */
+.carousel-control-prev,
+.carousel-control-next {
+  width: auto;
+  color: #000; /* Control arrows color */
+  background: none;
 }
 
-.services .icon-box .icon {
-  margin-bottom: 10px;
+#carCarousel {
+  margin-top: 50px; /* Adjust margin-top as needed */
 }
-
-.services .icon-box .icon i {
-  color: #47b2e4;
-  font-size: 36px;
-  transition: 0.3s;
+.carousel-control-prev,
+.carousel-control-next {
+  width: auto;
+  color: #000; /* Control arrows color */
+  background-color: #9bc4ec; /* Background color */
 }
-
-.services .icon-box h4 {
-  font-weight: 500;
-  margin-bottom: 15px;
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
   font-size: 24px;
+  color: black; /* Arrow color */
+}
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  color: black !important; /* Arrow color */
 }
 
-.services .icon-box h4 a {
-  color: #37517e;
-  transition: ease-in-out 0.3s;
+#carCarousel .carousel-inner .carousel-item {
+  text-align: center;
 }
 
-.services .icon-box p {
-  line-height: 24px;
-  font-size: 14px;
-  margin-bottom: 0;
+#carCarousel .carousel-inner .carousel-item img {
+  width: 100%; /* Set the width to fill the container */
+  height: auto; /* Allow the height to adjust proportionally based on the width */
 }
-
-.services .icon-box:hover {
-  transform: translateY(-10px);
-}
-
-.services .icon-box:hover h4 a {
-  color: #47b2e4;
+.carousel-item img {
+  max-width: 500px; /* Adjust the maximum width as needed */
+  max-height: 400px; /* Adjust the maximum height as needed */
+  margin: auto;
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Shadow effect */
 }
 
 /*--------------------------------------------------------------
