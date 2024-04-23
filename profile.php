@@ -1,114 +1,114 @@
 <?php
-    session_start();
-    require("./conf.php");
-    
-    // Simulated client data (replace with database query)
-    $clientData = array(
-        'id' => isset($_SESSION['id']) ? $_SESSION['id'] : '', 
-        'name' => isset($_SESSION["name"]) ? $_SESSION["name"] : '',
-        'email' => isset($_SESSION['email']) ? $_SESSION['email'] : '',
-        'phone' => isset($_SESSION['phone']) ? $_SESSION['phone'] : '',
-        'password' => isset($_SESSION["password"]) ? $_SESSION["password"] : '',
-        'profile_image' => 'default_profile.jpg'
-    );
+session_start();
+require("./conf.php");
 
-    
-    // Check if the form is submitted
-    if (isset($_SERVER["REQUEST_METHOD"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
-        // Update client data in the database
-        $clientData['id'] = $_SESSION['id'];
-        $clientData['name'] = $_POST['name'];
-        $clientData['email'] = $_POST['email'];
-        $clientData['phone'] = $_POST['phone'];
-        $clientData['password'] = $_POST['password'];
-    
-        // Hash the password securely using SHA-512
-        $hashed_password = hash('sha512', $clientData['password']);
-        
-        try {
-            $conn = new PDO(DB_DSN, DB_USER, DB_PASS);
-            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
-            $stmt = $conn->prepare("UPDATE clients SET name = :name, email = :email, numtel = :phone WHERE id = :id");
+// Simulated client data (replace with database query)
+$clientData = array(
+    'id' => isset($_SESSION['id']) ? $_SESSION['id'] : '',
+    'name' => isset($_SESSION["name"]) ? $_SESSION["name"] : '',
+    'email' => isset($_SESSION['email']) ? $_SESSION['email'] : '',
+    'phone' => isset($_SESSION['phone']) ? $_SESSION['phone'] : '',
+    'password' => isset($_SESSION["password"]) ? $_SESSION["password"] : '',
+    'profile_image' => 'default_profile.jpg'
+);
+
+// Check if the form is submitted
+if (isset($_SERVER["REQUEST_METHOD"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    // Update client data in the database
+    $clientData['id'] = $_SESSION['id'];
+    $clientData['name'] = $_POST['name'];
+    $clientData['email'] = $_POST['email'];
+    $clientData['phone'] = $_POST['phone'];
+    $clientData['password'] = $_POST['password'];
+
+    // Hash the password securely using SHA-512
+    $hashed_password = hash('sha512', $clientData['password']);
+
+    try {
+        $conn = new PDO(DB_DSN, DB_USER, DB_PASS);
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $stmt = $conn->prepare("UPDATE clients SET name = :name, email = :email, numtel = :phone WHERE id = :id");
+        $stmt->bindParam(":id", $clientData['id']);
+        $stmt->bindParam(":name", $clientData['name']);
+        $stmt->bindParam(":email", $clientData['email']);
+        $stmt->bindParam(":phone", $clientData['phone']);
+        $stmt->execute();
+
+        if (!empty($clientData['password']) && $clientData['password'] != '') {
+            $stmt = $conn->prepare("UPDATE clients SET password = :password WHERE id = :id");
             $stmt->bindParam(":id", $clientData['id']);
-            $stmt->bindParam(":name", $clientData['name']);
-            $stmt->bindParam(":email", $clientData['email']);
-            $stmt->bindParam(":phone", $clientData['phone']);
+            $stmt->bindParam(":password", $hashed_password);
             $stmt->execute();
-            if(!empty($clientData['password'])&& $clientData['password']!= ''){
-                $stmt = $conn->prepare("UPDATE clients SET password = :password WHERE id = :id");
-                $stmt->bindParam(":id", $clientData['id']);
-                $stmt->bindParam(":password", $hashed_password);
-                $stmt->execute();
-            }
-            
-        } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
         }
-        if ($_FILES['profile_image']['name']) {
-            // Get the user's ID or username to use as the folder name
-            $user_folder = isset($_SESSION['id']) ? $_SESSION['id'] : '';
-        
-            // Create the folder if it doesn't exist
-            $target_dir = "./uploads/{$user_folder}/";
-            if (!file_exists($target_dir)) {
-                mkdir($target_dir, 0777, true); // Create the folder recursively
-            }
-        
-            // Proceed with file upload
-            $target_file = $target_dir . basename($_FILES["profile_image"]["name"]);
-            $uploadOk = 1;
-            $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-        
-            // Check if file is an actual image or fake image
-            $check = getimagesize($_FILES["profile_image"]["tmp_name"]);
-            if ($check === false) {
-                echo '<div class="alert alert-danger" role="alert">File is not an image.</div>';
-                $uploadOk = 0;
-            }
-        
-            // Check if file already exists
-            if (file_exists($target_file)) {
-                echo '<div class="alert alert-danger" role="alert">Sorry, file already exists.</div>';
-                $uploadOk = 0;
-            }
-        
-            // Check file size
-            if ($_FILES["profile_image"]["size"] > 500000) {
-                echo '<div class="alert alert-danger" role="alert">Sorry, your file is too large.</div>';
-                $uploadOk = 0;
-            }
-        
-            // Allow certain file formats
-            $allowed_formats = ["jpg", "png", "jpeg", "gif"];
-            if (!in_array($imageFileType, $allowed_formats)) {
-                echo '<div class="alert alert-danger" role="alert">Sorry, only JPG, JPEG, PNG & GIF files are allowed.</div>';
-                $uploadOk = 0;
-            }
-        
+
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+    }
+
+    if ($_FILES['profile_image']['name']) {
+        // Get the user's ID or username to use as the folder name
+        $user_folder = isset($_SESSION['id']) ? $_SESSION['id'] : '';
+
+        // Create the folder if it doesn't exist
+        $target_dir = "./uploads/{$user_folder}/";
+        if (!file_exists($target_dir)) {
+            mkdir($target_dir, 0777, true); // Create the folder recursively
+        }
+
+        // Proceed with file upload
+        $target_file = $target_dir . basename($_FILES["profile_image"]["name"]);
+        $uploadOk = 1;
+        $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+
+        // Check if file is an actual image or fake image
+        $check = getimagesize($_FILES["profile_image"]["tmp_name"]);
+        if ($check === false) {
+            echo '<div class="alert alert-danger" role="alert">File is not an image.</div>';
+            $uploadOk = 0;
+        }
+
+        // Check if file already exists
+        if (file_exists($target_file)) {
+            echo '<div class="alert alert-danger" role="alert">Sorry, file already exists.</div>';
+            $uploadOk = 0;
+        }
+
+        // Check file size
+        if ($_FILES["profile_image"]["size"] > 500000) {
+            echo '<div class="alert alert-danger" role="alert">Sorry, your file is too large.</div>';
+            $uploadOk = 0;
+        }// Allow certain file formats
+        $allowed_formats = ["jpg", "png", "jpeg", "gif"];
+        if (!in_array($imageFileType, $allowed_formats)) {
+            echo '<div class="alert alert-danger" role="alert">Sorry, only JPG, JPEG, PNG & GIF files are allowed.</div>';
+            $uploadOk = 0;
+        }
+
+        // Check if $upload
             // Check if $uploadOk is set to 0 by an error
             if ($_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
                 echo '<div class="alert alert-danger" role="alert">Sorry, there was an error uploading your file.</div>';
-                exit;   
+                exit;
             }
-        
+
             // Attempt to move the uploaded file to the target directory
             if ($uploadOk == 1 && move_uploaded_file($_FILES["profile_image"]["tmp_name"], $target_file)) {
                 $uploaded_file_path = $target_dir . basename($_FILES["profile_image"]["name"]);
                 echo '<div class="alert alert-success" role="alert">The file ' . htmlspecialchars($uploaded_file_path) . ' has been uploaded.</div>';
-        
+
                 // Add the image information to the database
                 try {
                     $conn = new PDO(DB_DSN, DB_USER, DB_PASS);
                     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
+
                     $stmt = $conn->prepare("INSERT INTO clients_images (client_id, image_name, image_path, upload_timestamp) VALUES (:client_id, :image_name, :image_path, :upload_timestamp)");
                     $stmt->bindParam(":client_id", $_SESSION['id']);
                     $stmt->bindParam(":image_name", $_FILES["profile_image"]["name"]);
                     $stmt->bindParam(":image_path", $target_file);
                     $stmt->bindValue(":upload_timestamp", date('Y-m-d H:i:s'));
                     $stmt->execute();
-        
+
                     // Update the clientData array with the uploaded image filename
                     $clientData['profile_image'] = $uploaded_file_path;
                 } catch(PDOException $e) {
@@ -118,10 +118,10 @@
                 echo '<div class="alert alert-danger" role="alert">Sorry, there was an error uploading your file.</div>';
             }
         }
-        
 
 
-       
+
+
 
 }
 

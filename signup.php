@@ -53,7 +53,7 @@
 
 
 <?php
-
+session_start();
 require_once("./conf.php");
 
 function testinput($data){
