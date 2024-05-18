@@ -1,55 +1,66 @@
 <?php
 session_start();
-require_once 'conf.php';
+require_once 'conf.php'; // Assuming this file contains database configuration constants
+
+// Initialize variables
+$name = ""; // Default value for the user's name
+$carMarque = "";
+$coutparJ = 0;
+$cout = 0;
+$clientId = "";
 
 // Check if the session variable is set, otherwise assign an empty string
-$name = isset($_SESSION["name"]) ? $_SESSION["name"] : "";
+if (isset($_SESSION["name"])) {
+    $name = $_SESSION["name"];
+}
+if (isset($_SESSION["id"])) {
+    $clientId = $_SESSION["id"];
+}
 
-// Get the CarId, pickDate, returnDate, and location from the query parameters
-$id = isset($_GET["carId"]) ? $_GET["carId"] : "";
-$pickDate = isset($_GET["pickDate"]) ? $_GET["pickDate"] : "";
-$returnDate = isset($_GET["returnDate"]) ? $_GET["returnDate"] : "";
-$location = isset($_GET["location"]) ? $_GET["location"] : "";
+// Validate and sanitize input parameters
+$id = filter_input(INPUT_GET, "carId", FILTER_VALIDATE_INT);
+$pickDate = filter_input(INPUT_GET, "pickDate", FILTER_SANITIZE_STRING);
+$returnDate = filter_input(INPUT_GET, "returnDate", FILTER_SANITIZE_STRING);
+$location = filter_input(INPUT_GET, "location", FILTER_SANITIZE_STRING);
+
+// Validate input parameters
+if (!$id || !$pickDate || !$returnDate || !$location) {
+    exit("Invalid input parameters.");
+}
 
 try {
     // Establish a connection to the database using PDO
     $pdo = new PDO(DB_DSN, DB_USER, DB_PASS);
-    // Configure PDO if necessary
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Prepare the SQL query
+    // Prepare and execute the SQL query
     $sql = "SELECT * FROM voiture WHERE id_voiture = ?";
     $stmt = $pdo->prepare($sql);
-    // Bind the parameter properly
-    $stmt->bindParam(1, $id, PDO::PARAM_INT);
-    // Execute the query
-    $stmt->execute();
-    // Fetch the result as an associative array
+    $stmt->execute([$id]);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
     // Check if the fetch was successful
     if ($result) {
-        // Retrieve the car marque
         $carMarque = $result["marque"];
+        $coutparJ = $result["prix_par_jour"];
     } else {
-        echo "No data found for CarId: $id";
+        exit("No data found for CarId: $id");
     }
+
+    // Calculate the number of days between pick-up and return dates
+    $pickTimestamp = strtotime($pickDate);
+    $returnTimestamp = strtotime($returnDate);
+    if ($returnTimestamp > $pickTimestamp) {
+        $days = floor(($returnTimestamp - $pickTimestamp) / (60 * 60 * 24));
+    } else {
+        exit("Error: Return date must be after pick-up date.");
+    }
+
+    // Calculate the total price
+    $cout = $coutparJ * $days;
 } catch (PDOException $e) {
     // Handle database errors
-    echo "Error: " . $e->getMessage();
-}
-
-// Calculate the number of days between pick-up and return dates
-$pickTimestamp = strtotime($pickDate);
-$returnTimestamp = strtotime($returnDate);
-if ($returnTimestamp > $pickTimestamp) {
-    // Calculate the number of days between pick-up and return dates
-    $days = ($returnTimestamp - $pickTimestamp) / (60 * 60 * 24);
-} else {
-    // If return date is not after pick-up date, set days to 0 or display an error
-    $days = 0;
-    // You may also want to display an error message to the user
-    echo "Error: Return date must be after pick-up date.";
+    exit("Database Error: " . $e->getMessage());
 }
 ?>
 <!DOCTYPE html>
@@ -64,9 +75,8 @@ if ($returnTimestamp > $pickTimestamp) {
 <body>
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div >
+    <div>
         <a class="navbar-brand" href="#">Tunisia Rent Cars</a>
-
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
@@ -75,9 +85,8 @@ if ($returnTimestamp > $pickTimestamp) {
                 <li class="nav-item">
                     <a class="nav-link" href="rent.php">Rent a Car</a>
                 </li>
-
                 <li class="nav-item active">
-                    <a class="nav-link" href="index.html#contact">contact</a>
+                    <a class="nav-link" href="index.html#contact">Contact</a>
                 </li>
             </ul>
         </div>
@@ -87,38 +96,51 @@ if ($returnTimestamp > $pickTimestamp) {
 <div class="container">
     <div class="facture-details">
         <h2>Facture</h2>
-        <p><span>Car:</span> <span id="carName"><?= $carMarque?></span></p>
-        <p><span>Price per day:</span> $<?= $result["prix_par_jour"]?></p>
-        <p><span>Pick-up Date:</span> <span id="pickDate"><?= $pickDate?></span></p>
-        <p><span>Return Date:</span> <span id="returnDate"><?= $returnDate?></span></p>
-        <p><span>Location:</span> <span id="location"><?= $location?></span></p>
-        <p><span>Total Price:</span> $<?= $result["prix_par_jour"] * $days?></p>
+        <p><span>Car:</span> <span id="carName"><?= htmlspecialchars($carMarque) ?></span></p>
+        <p><span>Price per day:</span> $<?= htmlspecialchars($coutparJ) ?></p>
+        <p><span>Pick-up Date:</span> <span id="pickDate"><?= htmlspecialchars($pickDate) ?></span></p>
+        <p><span>Return Date:</span> <span id="returnDate"><?= htmlspecialchars($returnDate) ?></span></p>
+        <p><span>Location:</span> <span id="location"><?= htmlspecialchars($location) ?></span></p>
+        <p><span>Total Price:</span> $<?= htmlspecialchars($cout) ?></p>
     </div>
 
     <!-- Pay and Cancel Buttons -->
     <div class="action-buttons">
-        <a href="#" class="btn btn-pay" onclick="confirmPayment()">Payer</a>
-        <a href="rent.php" class="btn btn-cancel">Annuler</a>
+        <button class=" btn btn-success " onclick="payer(<?= htmlspecialchars($result['id_voiture']) ?>, <?= htmlspecialchars($cout) ?>)">Pay Now</button>
+        <a href="rent.php" class="btn btn-cancel">Cancel</a>
     </div>
-
-    <script>
-        function confirmPayment() {
-            // Display a confirmation dialog
-            var confirmation = confirm("Are you sure you want to proceed with payment?");
-
-            // If the user confirms, proceed with payment
-            if (confirmation) {
-                // Here you can place your code to proceed with payment
-                // For example, you can redirect the user to a payment page
-                 window.location.href = "rent.php";
-                alert("Payment successful!");
-            } else {
-                // If the user cancels, do nothing or provide feedback
-                alert("Payment cancelled.");
-            }
-        }
-    </script>
-
 </div>
+
+<script>
+    function payer(carId, price) {
+        // Retrieve selected values
+        var pickDate = "<?= htmlspecialchars($pickDate) ?>";
+        var returnDate = "<?= htmlspecialchars($returnDate) ?>";
+        var location = "<?= htmlspecialchars($location) ?>";
+
+        // AJAX request to send data to PHP page for payment processing and insertion
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "process_payment.php", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // Handle response from PHP page
+                var response = xhr.responseText;
+                if (response.trim() === "success") {
+                    // Redirect to rent.php if payment is successful
+                    window.location.href = "rent.php";
+                } else {
+                    // Display error message
+                    alert(response);
+                }
+            }
+        };
+        // Prepare data to send
+        var data = "carId=" + encodeURIComponent(carId) + "&pickDate=" + encodeURIComponent(pickDate) + "&returnDate=" + encodeURIComponent(returnDate) + "&location=" + encodeURIComponent(location) + "&clientId=" + encodeURIComponent("<?= htmlspecialchars($clientId) ?>") + "&price=" + encodeURIComponent(price);
+        // Send data
+        xhr.send(data);
+    }
+</script>
+
 </body>
 </html>

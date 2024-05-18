@@ -87,7 +87,28 @@ h1, h2, p {
     font-weight: bold;
     color: #333;
 }
-/* Button Styles */
+.action-buttons {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.action-buttons button,
+.action-buttons a {
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    margin: 5px;
+}
+
+.action-buttons button:hover,
+.action-buttons a:hover {
+    background-color: #555;
+}
+/* Button Styles*/
+
 .btn {
     display: inline-block;
     padding: 12px 24px;
@@ -101,14 +122,15 @@ h1, h2, p {
 .btn:hover {
     background-color: #555;
 }
-/* Pay Button */
+
+/*Pay Button*/
 .btn-pay {
     background-color: #4caf50;
 }
 .btn-pay:hover {
     background-color: #45a049;
 }
-/* Cancel Button */
+/*Cancel Button*/
 .btn-cancel {
     background-color: #f44336;
 }

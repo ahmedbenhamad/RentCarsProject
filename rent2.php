@@ -1,184 +1,166 @@
 <?php
 session_start();
 require_once 'conf.php';
-$name=isset($_SESSION["name"])?$_SESSION["name"] :"";
-// Établir une connexion à la base de données en utilisant PDO
-$pdo = new PDO(DB_DSN, DB_USER, DB_PASS);
-// Configuration supplémentaire de PDO si nécessaire
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-$pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-// Préparation de la requête SQL
-$sql = "SELECT * FROM voiture;";
-$result=$pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
-$_SESSION["id_voiture"]=$result["id_voiture"];
-$id_voiture=$_SESSION["id_voiture"];
 
+// Check if the session variable is set, otherwise assign an empty string
+$name = isset($_SESSION["name"]) ? $_SESSION["name"] : "";
+$clientId = isset($_SESSION["id"]) ? $_SESSION["id"] : "";
 
-/*function getData() {
+try {
+    // Establish a connection to the database using PDO
+    $pdo = new PDO(DB_DSN, DB_USER, DB_PASS);
+    // Configure PDO if necessary
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-  $postData = filter_input_array(INPUT_POST); // Récupère les données POST filtrées
-  $dateDebut = isset($postData["pickDate1"]) ? $postData["pickDate1"] : null;
-  $dateFin = isset($postData["returnDate1"]) ? $postData["returnDate1"] : null;
-  //$coutTotal = isset($postData["cout_total"]) ? $postData["cout_total"] : null;
-
-  return array("date_debut" => $dateDebut, "date_fin" => $dateFin);
-}*/
-
-$_SESSION["db"]=$_POST["pickDate1"];
-$_SESSION["df"]=$_POST["returnDate1"];
+    // Prepare the SQL query to fetch car data from the database
+    $stmt = $pdo->query("SELECT * FROM voiture");
+    // Fetch all rows as an associative array
+    $cars = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    // Handle database errors
+    echo "Error: " . $e->getMessage();
+}
 
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rent a Car</title>
     <link rel="stylesheet" href="./assets/css/rentstyle.css">
-    <link rel="shortcut icon" type="image/icon" href="./assets/img/clients/icon.ico">
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-
-    <style>
-        .navbar {
-            background-color: #333;
-            color: white;
-            padding: 10px 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .navbar-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .navbar-brand {
-            font-size: 1.5rem;
-            font-weight: bold;
-            text-decoration: none;
-            color: white;
-        }
-
-        .navbar-brand:hover {
-            color: #ddd;
-        }
-
-        .navbar-nav {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-        }
-
-        .navbar-nav li {
-            margin-right: 15px;
-        }
-
-        .navbar-nav li a {
-            color: white;
-            text-decoration: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-
-        .navbar-nav li a:hover {
-            background-color: #555;
-        }
-
-        .nav-item img {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 2px solid #fff;
-            transition: transform 0.3s ease; /* Add transition for smooth hover effect */
-        }
-
-        .nav-item img:hover {
-            transform: scale(1.1); /* Increase size on hover */
-        }
-    </style>
 </head>
+<style>
+    /* Paste the provided CSS styles here */
+    .navbar {
+        background-color: #333;
+        color: white;
+        padding: 10px 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .navbar-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .navbar-brand {
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-decoration: none;
+        color: white;
+    }
+
+    .navbar-brand:hover {
+        color: #ddd;
+    }
+
+    .navbar-nav {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+    }
+
+    .navbar-nav li {
+        margin-right: 15px;
+    }
+
+    .navbar-nav li a {
+        color: white;
+        text-decoration: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+    }
+
+    .navbar-nav li a:hover {
+        background-color: #555;
+    }
+
+    .nav-item img {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        transition: transform 0.3s ease; /* Add transition for smooth hover effect */
+    }
+
+    .nav-item img:hover {
+        transform: scale(1.1); /* Increase size on hover */
+    }
+</style>
 <body>
+<div class="navbar">
+    <div class="navbar">
+        <div class="container navbar-container">
+            <a href="#" class="navbar-brand">Rent a Car</a>
+            <ul class="navbar-nav">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="profile.php">Profile</a></li>
+                <li><a href="index.html">Logout</a></li>
+                <li class="nav-item">
+                    <a href="profile.php">
+                        <img src="<?php echo htmlspecialchars($_SESSION['image']); ?>" class="rounded-circle profile-image-nav" alt="Profile Image">
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
 <div class="background">
     <div class="container">
-        <h1>Welcome <?php echo $name; ?></h1> <!-- Affichage du nom de l'utilisateur -->
+        <h1>Welcome <?php echo htmlspecialchars($name); ?></h1> <!-- Display the name here -->
         <div class="car-list">
-            <!-- Exemple de formulaire pour une voiture -->
-            <div class="car">
-                <form method="POST">
-                    <img src="./assets/img/clients/Ford.png" alt="Ford">
+            <!-- Render each car dynamically -->
+            <?php foreach ($cars as $car) { ?>
+                <div class="car">
+                    <img src="./assets/img/clients/<?php echo htmlspecialchars($car['marque']); ?>.png" alt="<?php echo htmlspecialchars($car['marque']); ?>">
                     <div class="details">
-                        <h2>Ford</h2>
-                        <p>Price: $35/day</p>
-                        <label for="pickDate1">Pick-up Date:</label>
-                        <input type="date" id="pickDate1" name="pickDate1">
-                        <label for="returnDate1">Return Date:</label>
-                        <input type="date" id="returnDate1" name="returnDate1">
-                        <button onclick="rentCar(1)">Rent Now</button> <!-- Appel de la fonction rentCar avec l'ID de la voiture -->
+                        <h2><?php echo htmlspecialchars($car['marque']); ?></h2>
+                        <p>Price: $<?php echo htmlspecialchars($car['prix_par_jour']); ?>/day</p>
+                        <label for="pickDate<?php echo htmlspecialchars($car['id_voiture']); ?>">Pick-up Date:</label>
+                        <input type="date" id="pickDate<?php echo htmlspecialchars($car['id_voiture']); ?>" name="pickDate<?php echo htmlspecialchars($car['id_voiture']); ?>">
+                        <label for="returnDate<?php echo htmlspecialchars($car['id_voiture']); ?>">Return Date:</label>
+                        <input type="date" id="returnDate<?php echo htmlspecialchars($car['id_voiture']); ?>" name="returnDate<?php echo htmlspecialchars($car['id_voiture']); ?>">
+                        <label for="location<?php echo htmlspecialchars($car['id_voiture']); ?>">Location:</label>
+                        <select id="location<?php echo htmlspecialchars($car['id_voiture']); ?>" name="location<?php echo htmlspecialchars($car['id_voiture']); ?>">
+                            <option value="Tunis" selected>Tunis</option>
+                            <option value="Sousse">Sousse</option>
+                            <option value="Sfax">Sfax</option>
+                        </select>
+                        <button onclick="rentCar(<?php echo htmlspecialchars($car['id_voiture']); ?>, <?php echo htmlspecialchars($car['prix_par_jour']); ?>)">Rent Now</button>
                     </div>
-                </form>
-
-            </div>
-            <!-- Autres formulaires de voiture ici... -->
+                </div>
+            <?php } ?>
         </div>
     </div>
 </div>
 
 <script>
-    function getPrixParJour(id_voiture) {
-        // Fonction à implémenter pour récupérer le prix par jour de la voiture
-        // en fonction de son identifiant. Par exemple, vous pouvez utiliser une requête AJAX pour
-        // interroger votre base de données et récupérer le prix correspondant.
-        // Pour cet exemple, je vais simplement retourner un prix fictif.
-        return 65; // Prix fictif de 65 dollars par jour
-    }
+    function rentCar(carId, price) {
+        // Retrieve selected values
+        var pickDate = document.getElementById("pickDate" + carId).value;
+        var returnDate = document.getElementById("returnDate" + carId).value;
+        var location = document.getElementById("location" + carId).value;
 
-
-    function rentCar(id_voiture) {
-        var pickDate = document.getElementById("pickDate" + id_voiture).value;
-        var returnDate = document.getElementById("returnDate" + id_voiture).value;
-
-        var id_client = <?php echo isset($_SESSION["id"]) ? $_SESSION["id"] : "null"; ?>;
-
-        if (id_client === null) {
-            alert("Veuillez vous connecter pour louer une voiture.");
-            return;
-        }
-
-        var startDate = new Date(pickDate);
-        var endDate = new Date(returnDate);
-        var timeDiff = Math.abs(endDate.getTime() - startDate.getTime());
-        var duration = Math.ceil(timeDiff / (1000 * 3600 * 24));
-
-        var prixParJour = getPrixParJour(id_voiture); // Fonction à implémenter pour récupérer le prix par jour de la voiture
-
-        var coutTotal = duration * prixParJour;
-
-        // Utilisation d'une requête AJAX pour envoyer les données au serveur
-        $.ajax({
-            type: "POST",
-            url: "location.php",
-            data: {
-                id_voiture: id_voiture,
-                id_client: id_client,
-                date_debut: pickDate,
-                date_fin: returnDate,
-                ville_reservation: "tunise", // Remplacez "VotreVille" par la ville choisie par l'utilisateur
-                cout_total: coutTotal
-            },
-            success: function(response) {
-                alert("Location enregistrée avec succès.");
-                window.location.href = "location.php";
-            },
-            error: function(xhr, status, error) {
-                alert("Erreur lors de l'enregistrement de la location.");
+        // AJAX request to send data to PHP page for payment processing and insertion
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "facture.php", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // Handle response from PHP page
+                var response = xhr.responseText;
+                // Display success message or handle errors
+                alert(response);
             }
-        });
+        };
+        // Prepare data to send
+        var data = "carId=" + encodeURIComponent(carId) + "&pickDate=" + encodeURIComponent(pickDate) + "&returnDate=" + encodeURIComponent(returnDate) + "&location=" + encodeURIComponent(location) + "&clientId=" + encodeURIComponent("<?php echo $clientId; ?>") + "&price=" + encodeURIComponent(price);
+        // Send data
+        xhr.send(data);
     }
-
 </script>
+
 </body>
 </html>

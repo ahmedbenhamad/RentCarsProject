@@ -36,7 +36,7 @@ function renderCar($car) {
     echo '<option value="Sousse">Sousse</option>';
     echo '<option value="Sfax">Sfax</option>';
     echo '</select>';
-    echo '<button onclick="rentCar(' . $car['id_voiture'] . ')">Rent Now</button>';
+    echo "<button onclick='rentCar(" . $car['id_voiture'] . ")'>Rent Now</button>";
     echo '</div>';
     echo '</div>';
 }
@@ -156,7 +156,7 @@ function renderCar($car) {
     </div>
 </div>
 
-<script>
+<<script>
     function rentCar(carId) {
         // Retrieve selected values
         var pickDate = document.getElementById("pickDate" + carId).value;
@@ -166,6 +166,8 @@ function renderCar($car) {
         // Redirect to facture page with query parameters
         window.location.href = "facture.php?carId=" + carId + "&pickDate=" + pickDate + "&returnDate=" + returnDate + "&location=" + location;
     }
+</script>
+
 </script>
 </body>
 </html>

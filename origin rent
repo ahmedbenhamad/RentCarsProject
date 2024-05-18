@@ -347,3 +347,14 @@ static $id=1;
 </script>
 </body>
 </html>
+
+ fetch('process_payment.php', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        idv: <?= $id ?>,
+                        idc: <?= $_SESSION["id"] ?>,
+                        dtb: <?= $pickTimestamp ?>,
+                        dtf: <?= $returnTimestamp ?>,
+                        villeR: '<?= $location ?>',
+                        coutT: <?= $cout ?>
+                    })
